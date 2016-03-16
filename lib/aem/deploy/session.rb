@@ -17,7 +17,7 @@ module Aem::Deploy
         @host = options.fetch(:host)
         @user = options.fetch(:user)
         @pass = CGI.escape(options.fetch(:pass))
-        @retry = options.fetch(:retry)
+        @retry = options.fetch(:retry) unless options[:retry].nil? 
       else
         raise 'Hostname, User and Password are required'
       end
@@ -39,9 +39,9 @@ module Aem::Deploy
     end
 
     # Recompiles JSPs on CMS
-    def recompile_jsps(host,user,pass)
+    def recompile_jsps
       begin
-        RestClient.post "http://#{user}:#{encoded_pass}@#{host}/system/console/slingjsp", :cmd => 'recompile', :timeout => 120
+        RestClient.post "http://#{@user}:#{@pass}@#{@host}/system/console/slingjsp", :cmd => 'recompile', :timeout => 120
       rescue RestClient::Found => error
         return {msg: 'JSPs recompiled'}.to_json
       rescue RestClient::RequestTimeout => error
