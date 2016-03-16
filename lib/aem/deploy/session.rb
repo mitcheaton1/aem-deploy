@@ -9,7 +9,6 @@ require 'json'
 require 'pry'
 module Aem::Deploy
 
-
   class Session
     attr_reader :host, :user, :pass, :retry
 
@@ -34,22 +33,25 @@ module Aem::Deploy
     rescue RestClient::RequestTimeout => error
       {msg: error.to_s}.to_json
       if @retry
+        puts 'retrying installation as there was a problem'
         retry unless (@retry -= 1).zero?
       end
     end
 
-    # # Recompiles JSPs on CMS
-    # def recompile_jsps(host,user,pass)
-    #   begin
-    #     RestClient.post "http://#{user}:#{encoded_pass}@#{host}/system/console/slingjsp", :cmd => 'recompile', :timeout => 120
-    #   rescue RestClient::Found => error
-    #     return {msg: error.to_s}.to_json
-    #   rescue RestClient::RequestTimeout => error
-    #     puts 'We had to retry recompiling JSPs. Might want to check it out'
-    #     retry unless (tries -= 1).zero?
-    #     return {msg: error.to_s}.to_json
-    #   end
-    # end
+    # Recompiles JSPs on CMS
+    def recompile_jsps(host,user,pass)
+      begin
+        RestClient.post "http://#{user}:#{encoded_pass}@#{host}/system/console/slingjsp", :cmd => 'recompile', :timeout => 120
+      rescue RestClient::Found => error
+        return {msg: 'JSPs recompiled'}.to_json
+      rescue RestClient::RequestTimeout => error
+        {msg: error.to_s}.to_json
+        if @retry
+          puts 'retrying installation as there was a problem'
+          retry unless (@retry -= 1).zero?
+        end
+      end
+    end
 
     # Checks response of any request to CMS. Breaks script if unexpected response.
     def parse_response(message)
@@ -60,7 +62,7 @@ module Aem::Deploy
       elsif message.include? ("302 Found")
         puts '  JSPs Recompiled'
       else
-        puts "  Something is wroning the script with response of #{JSON.parse(message)}"
+        raise "  It looks there was a problem uploading/installing the package #{JSON.parse(message)}"
       end
     end
   end
