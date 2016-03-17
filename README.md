@@ -4,8 +4,6 @@ Simple Ruby wrapper for deploying to AEM
 
 ## Installation
 
-You need to have the docker compose cli installed. 
-
 Add this line to your application's Gemfile:
 
 ```ruby
