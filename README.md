@@ -28,7 +28,7 @@ Intialize the object (crx host, user, and pass are required )
 
 Easy Install to CRX (uploads and installs). 
 
-    $ client.install_package('/Users/meaton/Desktop/centre.zip')
+    $ client.easy_install('/Users/meaton/Desktop/centre.zip')
 
 Upload a package to CRX.
 
