@@ -7,28 +7,47 @@ require 'pry'
 module Aem::Deploy
 
   class Session
-    attr_reader :host, :user, :pass, :retry
+    attr_reader :host, :user, :pass, :retry, :upload_path
 
-    def initialize(options)
-      if [:host, :user, :pass].all? {|k| options.key?(k)}
-        @host = options.fetch(:host)
-        @user = options.fetch(:user)
-        @pass = CGI.escape(options.fetch(:pass))
-        @retry = options.fetch(:retry) unless options[:retry].nil?
+    def initialize(params)
+      if [:host, :user, :pass].all? {|k| params.key?(k)}
+        @host = params.fetch(:host)
+        @user = params.fetch(:user)
+        @pass = CGI.escape(params.fetch(:pass))
+        @retry = params.fetch(:retry) unless params[:retry].nil?
       else
         raise 'Hostname, User and Password are required'
       end
     end
 
-    # Install latest package to CMS
-    def install_package(package_path)
+    #upload and install package
+    def easy_install(package_path)
+      upload_package(package_path)
+      install_package
+    end
+
+    # upload package
+    def upload_package(package_path)
       upload = RestClient.post("http://#{@user}:#{@pass}@#{@host}/crx/packmgr/service/.json", :cmd => 'upload', :package => File.new(package_path, 'rb'), :force => true, :timeout => 300)
       parse_response(upload)
-      upload_path = URI.encode(JSON.parse(upload)["path"])
-      install = RestClient.post("http://#{user}:#{pass}@#{host}/crx/packmgr/service/.json#{upload_path}", :cmd => 'install', :timeout => 300)
+      @upload_path = URI.encode(JSON.parse(upload)["path"])
+    rescue RestClient::RequestTimeout => error
+      {error: error.to_s}.to_json
+      if @retry
+        puts 'retrying installation as there was a problem'
+        retry unless (@retry -= 1).zero?
+      end
+    end
+
+    # Install package
+    def install_package(options = {})
+      if options[:path]
+        @upload_path = options[:path]
+      end
+      install = RestClient.post("http://#{user}:#{pass}@#{host}/crx/packmgr/service/.json#{@upload_path}", :cmd => 'install', :timeout => 300)
       parse_response(install)
     rescue RestClient::RequestTimeout => error
-      {msg: error.to_s}.to_json
+      {error: error.to_s}.to_json
       if @retry
         puts 'retrying installation as there was a problem'
         retry unless (@retry -= 1).zero?
@@ -42,7 +61,7 @@ module Aem::Deploy
       rescue RestClient::Found => error
         return {msg: 'JSPs recompiled'}.to_json
       rescue RestClient::RequestTimeout => error
-        {msg: error.to_s}.to_json
+        {error: error.to_s}.to_json
         if @retry
           puts 'retrying installation as there was a problem'
           retry unless (@retry -= 1).zero?
@@ -54,12 +73,10 @@ module Aem::Deploy
     def parse_response(message)
       if JSON.parse(message)['success'] == true
         return "  #{message}"
-      elsif JSON.parse(message)['msg'].include?("Package already exists")
-        return "  #{message}"
       elsif message.include? ("302 Found")
         return '  JSPs Recompiled'
       else
-        raise "  It looks there was a problem uploading/installing the package #{JSON.parse(message)}"
+        raise "  #{JSON.parse(message)}"
       end
     end
   end

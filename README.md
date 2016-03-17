@@ -26,9 +26,13 @@ Intialize the object (crx host, user, and pass are required )
 
     $ client = Aem::Deploy.new({host: '192.168.0.1', user: 'admin', pass: 'admin'})
 
-Install to CRX. 
+Easy Install to CRX (uploads and installs). 
 
     $ client.install_package('/Users/meaton/Desktop/centre.zip')
+
+Upload a package to CRX.
+
+    $ client.upload_package('/Users/meaton/Desktop/centre.zip')
 
 Recompile JSP's
 

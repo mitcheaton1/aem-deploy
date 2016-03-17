@@ -4,8 +4,8 @@ require "aem/deploy/session"
 module Aem
   module Deploy
     # Create a new session with teh default options.
-    def self.new(options = {})
-      Session.new(options)
+    def self.new(params = {})
+      Session.new(params)
     end
   end
 end
