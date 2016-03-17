@@ -34,6 +34,10 @@ Upload a package to CRX.
 
     $ client.upload_package('/Users/meaton/Desktop/centre.zip')
 
+Install a package already on CRX.
+
+    $ client.install_package('/Users/meaton/Desktop/centre.zip')
+
 Recompile JSP's
 
     $ client.recompile_jsps
