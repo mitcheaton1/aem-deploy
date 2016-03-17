@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
 
   spec.summary       = %q{A gem to wrap deployments to Adobe Experience Manager}
   spec.description   = %q{A gem to wrap deployments to Adobe Experience Manager}
-  spec.homepage      = "https://github.com/mitcheaton1/aem_deploy"
+  spec.homepage      = "https://github.com/mitcheaton1/aem-deploy"
   spec.license       = "MIT"
 
   # Prevent pushing this gem to RubyGems.org by setting 'allowed_push_host', or
