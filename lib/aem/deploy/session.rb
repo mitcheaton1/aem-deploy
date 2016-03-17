@@ -9,6 +9,9 @@ module Aem::Deploy
   class Session
     attr_reader :host, :user, :pass, :retry, :upload_path
 
+    # Initialize the object
+    # @param [Hash] including :host, :user and :pass REQUIRED, optional :retry [Integer] which will retry failures x times.
+    # @raise [Error] if :host, :user and :pass are not passed on initialize
     def initialize(params)
       if [:host, :user, :pass].all? {|k| params.key?(k)}
         @host = params.fetch(:host)
@@ -20,13 +23,18 @@ module Aem::Deploy
       end
     end
 
-    #upload and install package
+    # See Upload and Install methods for individual descriptions
+    # @param [String] path to the package for upload and installation.
+    # @return [Hash] installation message from crx
     def easy_install(package_path)
       upload_package(package_path)
       install_package
     end
 
-    # upload package
+    # Uploads Package to CRX
+    # @param [String] path to the package for upload and installation.
+    # @return [Hash] installation message from crx.
+    # @raise [Error] if server returns anything but success.
     def upload_package(package_path)
       upload = RestClient.post("http://#{@user}:#{@pass}@#{@host}/crx/packmgr/service/.json", :cmd => 'upload', :package => File.new(package_path, 'rb'), :force => true, :timeout => 300)
       parse_response(upload)
@@ -39,7 +47,10 @@ module Aem::Deploy
       end
     end
 
-    # Install package
+    # Installs Package to CRX
+    # @param [Hash] Optionally install packages already on CRX uses :path key in options hash, if you know the path to the package on crx.
+    # @return [Hash] installation message from crx.
+    # @raise [Error] if server returns anything but success.
     def install_package(options = {})
       if options[:path]
         @upload_path = options[:path]
@@ -54,7 +65,9 @@ module Aem::Deploy
       end
     end
 
-    # Recompiles JSPs on CMS
+    # Recompiles JSPs
+    # @return [String] Recompile complete
+    # @raise [Error] if server returns anything but success.
     def recompile_jsps
       begin
         RestClient.post "http://#{@user}:#{@pass}@#{@host}/system/console/slingjsp", :cmd => 'recompile', :timeout => 120
@@ -69,7 +82,9 @@ module Aem::Deploy
       end
     end
 
-    # Checks response of any request to CMS. Breaks script if unexpected response.
+    # Parses message output from CRX
+    # @return [String] Recompile complete
+    # @raise [Error] if server returns anything but success.
     def parse_response(message)
       if JSON.parse(message)['success'] == true
         return "  #{message}"
