@@ -1,6 +1,6 @@
 # Aem::Deploy
 
-Simple Ruby wrapper for the docker compose cli
+Simple Ruby wrapper for deploying to AEM
 
 ## Installation
 
