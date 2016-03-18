@@ -30,12 +30,13 @@ module Aem::Deploy
       install_package
     end
 
+    #:timeout => 90000000, :open_timeout => 90000000
     # Uploads Package to CRX
     # @param [String] path to the package for upload and installation.
     # @return [Hash] installation message from crx.
     # @raise [Error] if server returns anything but success.
     def upload_package(package_path)
-      upload = RestClient.post("http://#{@user}:#{@pass}@#{@host}/crx/packmgr/service/.json", :cmd => 'upload', :package => File.new(package_path, 'rb'), :force => true, :timeout => 300)
+      upload = RestClient::Request.execute(method: :post, url: "http://#{@user}:#{@pass}@#{@host}/crx/packmgr/service/.json", payload: {cmd: 'upload', package: File.new(package_path, 'rb'), force: true} )
       parse_response(upload)
       @upload_path = URI.encode(JSON.parse(upload)["path"])
     rescue RestClient::RequestTimeout => error
@@ -54,7 +55,7 @@ module Aem::Deploy
       if options[:path]
         @upload_path = options[:path]
       end
-      install = RestClient.post("http://#{user}:#{pass}@#{host}/crx/packmgr/service/.json#{@upload_path}", :cmd => 'install', :timeout => 300)
+      install = RestClient::Request.execute(method: :post, url: "http://#{@user}:#{@pass}@#{@host}/crx/packmgr/service/.json#{@upload_path}", payload: {cmd: 'install'} )
       parse_response(install)
     rescue RestClient::RequestTimeout => error
       {error: error.to_s}.to_json
