@@ -3,7 +3,6 @@ require 'open-uri'
 require 'uri'
 require 'cgi'
 require 'json'
-require 'pry'
 module Aem::Deploy
 
   class Session
