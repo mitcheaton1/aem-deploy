@@ -39,7 +39,7 @@ module Aem::Deploy
       upload = RestClient::Request.execute(method: :post, url: "http://#{@user}:#{@pass}@#{@host}/crx/packmgr/service/.json", payload: {cmd: 'upload', package: File.new(package_path, 'rb'), force: true} )
       parse_response(upload)
       @upload_path = URI.encode(JSON.parse(upload)["path"])
-    rescue RestClient::RequestTimeout => error
+    rescue => error
       {error: error.to_s}.to_json
       if @retry
         puts 'retrying installation as there was a problem'
@@ -57,7 +57,7 @@ module Aem::Deploy
       end
       install = RestClient::Request.execute(method: :post, url: "http://#{@user}:#{@pass}@#{@host}/crx/packmgr/service/.json#{@upload_path}", payload: {cmd: 'install'} )
       parse_response(install)
-    rescue RestClient::RequestTimeout => error
+    rescue => error
       {error: error.to_s}.to_json
       if @retry
         puts 'retrying installation as there was a problem'
@@ -71,9 +71,9 @@ module Aem::Deploy
     def recompile_jsps
       begin
         RestClient.post "http://#{@user}:#{@pass}@#{@host}/system/console/slingjsp", :cmd => 'recompile', :timeout => 120
-      rescue RestClient::Found => error
+      rescue => error
         return {msg: 'JSPs recompiled'}.to_json
-      rescue RestClient::RequestTimeout => error
+      rescue => error
         {error: error.to_s}.to_json
         if @retry
           puts 'retrying installation as there was a problem'
