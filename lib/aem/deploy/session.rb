@@ -1,4 +1,4 @@
-require 'rest_client'
+require 'rest-client'
 require 'open-uri'
 require 'uri'
 require 'cgi'
