@@ -6,7 +6,7 @@ require 'json'
 module Aem::Deploy
 
   class Session
-    attr_reader :host, :user, :pass, :retry, :upload_path
+    attr_reader :host, :user, :pass, :retry, :upload_path, :protocol
 
     # Initialize the object
     # @param [Hash] including :host, :user and :pass REQUIRED, optional :retry [Integer] which will retry failures x times.
@@ -17,6 +17,10 @@ module Aem::Deploy
         @user = params.fetch(:user)
         @pass = CGI.escape(params.fetch(:pass))
         @retry = params.fetch(:retry).to_i unless params[:retry].nil?
+        @protocol = params.fetch(:protocol)
+        if @protocol.nil?
+          @protocol = 'http'
+        end
       else
         raise 'Hostname, User and Password are required'
       end
@@ -36,7 +40,7 @@ module Aem::Deploy
     # @return [Hash] installation message from crx.
     # @raise [Error] if server returns anything but success.
     def upload_package(package_path)
-      upload = RestClient::Request.execute(method: :post, url: "http://#{@user}:#{@pass}@#{@host}/crx/packmgr/service/.json", payload: {cmd: 'upload', package: File.new(package_path, 'rb'), force: true} )
+      upload = RestClient::Request.execute(method: :post, url: "#{@protocol}://#{@user}:#{@pass}@#{@host}/crx/packmgr/service/.json", payload: {cmd: 'upload', package: File.new(package_path, 'rb'), force: true} )
       parse_response(upload)
       @upload_path = URI.encode(JSON.parse(upload)["path"])
     rescue => error
@@ -55,7 +59,7 @@ module Aem::Deploy
       if options[:path]
         @upload_path = options[:path]
       end
-      install = RestClient::Request.execute(method: :post, url: "http://#{@user}:#{@pass}@#{@host}/crx/packmgr/service/.json#{@upload_path}", payload: {cmd: 'install'} )
+      install = RestClient::Request.execute(method: :post, url: "#{@protocol}://#{@user}:#{@pass}@#{@host}/crx/packmgr/service/.json#{@upload_path}", payload: {cmd: 'install'} )
       parse_response(install)
     rescue => error
       {error: error.to_s}.to_json
@@ -70,7 +74,7 @@ module Aem::Deploy
     # @raise [Error] if server returns anything but success.
     def recompile_jsps
       begin
-        RestClient.post "http://#{@user}:#{@pass}@#{@host}/system/console/slingjsp", :cmd => 'recompile', :timeout => 120
+        RestClient.post "#{@protocol}://#{@user}:#{@pass}@#{@host}/system/console/slingjsp", :cmd => 'recompile', :timeout => 120
       rescue => error
         return {msg: 'JSPs recompiled'}.to_json
       rescue => error
