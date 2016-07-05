@@ -18,7 +18,6 @@ module Aem::Deploy
         @pass = CGI.escape(params.fetch(:pass))
         @retry = params.fetch(:retry).to_i unless params[:retry].nil?
         @protocol = params.fetch(:protocol) unless params[:protocol].nil?
-        @cert = params.fetch(:cert) unless params[:cert].nil?
         if @protocol.nil?
           @protocol = 'http'
         end
@@ -41,11 +40,7 @@ module Aem::Deploy
     # @return [Hash] installation message from crx.
     # @raise [Error] if server returns anything but success.
     def upload_package(package_path)
-      if @protocol == 'https'
-        upload = RestClient::Request.execute(method: :post, url: "#{@protocol}://#{@user}:#{@pass}@#{@host}/crx/packmgr/service/.json", :ssl_ca_file => @cert, payload: {cmd: 'upload', package: File.new(package_path, 'rb'), force: true} )
-      else
-        upload = RestClient::Request.execute(method: :post, url: "#{@protocol}://#{@user}:#{@pass}@#{@host}/crx/packmgr/service/.json", payload: {cmd: 'upload', package: File.new(package_path, 'rb'), force: true} )
-      end
+      upload = RestClient::Request.execute(method: :post, url: "#{@protocol}://#{@user}:#{@pass}@#{@host}/crx/packmgr/service/.json", payload: {cmd: 'upload', package: File.new(package_path, 'rb'), force: true} )
       parse_response(upload)
       @upload_path = URI.encode(JSON.parse(upload)["path"])
     rescue => error
@@ -64,11 +59,7 @@ module Aem::Deploy
       if options[:path]
         @upload_path = options[:path]
       end
-      if @protocol == 'https'
-        install = RestClient::Request.execute(method: :post, url: "#{@protocol}://#{@user}:#{@pass}@#{@host}/crx/packmgr/service/.json#{@upload_path}", :ssl_ca_file => @cert, payload: {cmd: 'install'} )
-      else
-         install = RestClient::Request.execute(method: :post, url: "#{@protocol}://#{@user}:#{@pass}@#{@host}/crx/packmgr/service/.json#{@upload_path}", payload: {cmd: 'install'} )
-      end
+      install = RestClient::Request.execute(method: :post, url: "#{@protocol}://#{@user}:#{@pass}@#{@host}/crx/packmgr/service/.json#{@upload_path}", payload: {cmd: 'install'} )
       parse_response(install)
     rescue => error
       {error: error.to_s}.to_json
