@@ -17,7 +17,7 @@ module Aem::Deploy
         @user = params.fetch(:user)
         @pass = CGI.escape(params.fetch(:pass))
         @retry = params.fetch(:retry).to_i unless params[:retry].nil?
-        @protocol = params.fetch(:protocol) unless params[:protocol]
+        @protocol = params.fetch(:protocol) unless params[:protocol].nil? 
         if @protocol.nil?
           @protocol = 'http'
         end
