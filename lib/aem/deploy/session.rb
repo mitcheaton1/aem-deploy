@@ -44,7 +44,7 @@ module Aem::Deploy
       parse_response(upload)
       @upload_path = URI.encode(JSON.parse(upload)["path"])
     rescue => error
-      {error: error.to_s}.to_json
+      puts {error: error.to_s}.to_json
       if @retry
         puts 'retrying installation as there was a problem'
         retry unless (@retry -= 1).zero?
@@ -62,7 +62,7 @@ module Aem::Deploy
       install = RestClient::Request.execute(method: :post, url: "#{@protocol}://#{@user}:#{@pass}@#{@host}/crx/packmgr/service/.json#{@upload_path}", payload: {cmd: 'install'} )
       parse_response(install)
     rescue => error
-      {error: error.to_s}.to_json
+      puts {error: error.to_s}.to_json
       if @retry
         puts 'retrying installation as there was a problem'
         retry unless (@retry -= 1).zero?
