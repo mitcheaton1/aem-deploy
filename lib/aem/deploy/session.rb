@@ -49,6 +49,7 @@ module Aem::Deploy
         puts 'retrying installation as there was a problem'
         retry unless (@retry -= 1).zero?
       end
+      raise
     end
 
     # Installs Package to CRX
