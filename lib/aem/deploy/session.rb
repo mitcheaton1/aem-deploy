@@ -68,6 +68,7 @@ module Aem::Deploy
         puts 'retrying installation as there was a problem'
         retry unless (@retry -= 1).zero?
       end
+      raise
     end
 
     # Recompiles JSPs
@@ -84,6 +85,7 @@ module Aem::Deploy
           puts 'retrying installation as there was a problem'
           retry unless (@retry -= 1).zero?
         end
+        raise
       end
     end
 
