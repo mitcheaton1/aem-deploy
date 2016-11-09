@@ -40,7 +40,7 @@ module Aem::Deploy
     # @return [Hash] installation message from crx.
     # @raise [Error] if server returns anything but success.
     def upload_package(package_path)
-      upload = RestClient::Request.execute(method: :post, url: "#{@protocol}://#{@user}:#{@pass}@#{@host}/crx/packmgr/service/.json", payload: {cmd: 'upload', package: File.new(package_path, 'rb'), force: true} )
+      upload = RestClient::Request.execute(method: :post, url: "#{@protocol}://#{@user}:#{@pass}@#{@host}/crx/packmgr/service/.json", :timeout => 300, payload: {cmd: 'upload', package: File.new(package_path, 'rb'), force: true} )
       parse_response(upload)
       @upload_path = URI.encode(JSON.parse(upload)["path"])
     rescue => error
@@ -60,7 +60,7 @@ module Aem::Deploy
       if options[:path]
         @upload_path = options[:path]
       end
-      install = RestClient::Request.execute(method: :post, url: "#{@protocol}://#{@user}:#{@pass}@#{@host}/crx/packmgr/service/.json#{@upload_path}", payload: {cmd: 'install'} )
+      install = RestClient::Request.execute(method: :post, url: "#{@protocol}://#{@user}:#{@pass}@#{@host}/crx/packmgr/service/.json#{@upload_path}", :timeout => 300, payload: {cmd: 'install'} )
       parse_response(install)
     rescue => error
       {error: error.to_s}.to_json
