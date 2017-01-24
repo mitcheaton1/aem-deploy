@@ -60,7 +60,7 @@ module Aem::Deploy
       if options[:path]
         @upload_path = options[:path]
       end
-      install = RestClient::Request.execute(method: :post, url: "#{@protocol}://#{@user}:#{@pass}@#{@host}/crx/packmgr/service/.json#{@upload_path}", :timeout => 300, payload: {cmd: 'install'} )
+      install = RestClient::Request.execute(method: :post, url: "#{@protocol}://#{@user}:#{@pass}@#{@host}/crx/packmgr/service/.json#{@upload_path}", :timeout => 300, payload: {cmd: 'install', recursive: true} )
       parse_response(install)
     rescue => error
       {error: error.to_s}.to_json
